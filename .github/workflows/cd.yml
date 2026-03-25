@@ -35,7 +35,7 @@ jobs:
     
     - name: Create Kubernetes secret dynamically
       run: |
-        echo "${{ secrets.K8S_ENV_FILE_2 }}" > .env
+        # echo "${{ secrets.K8S_ENV_FILE_2 }}" > .env
 
         # DEBUG (remove later): confirm template substitutions and env file content
         echo "DEBUG: NAMESPACE=${NAMESPACE}"
