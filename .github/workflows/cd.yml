@@ -20,17 +20,25 @@ jobs:
 
     - name: Normalize env file
       run: |
-        printf "%s" "${{ secrets.K8S_ENV_FILE }}" | awk '
+        # Safely write secret to raw.env without executing multiline content
+        cat << 'EOF' > raw.env
+        ${{ secrets.K8S_ENV_FILE }}
+        EOF
+    
+        # Convert multiline variable values into single-line \n format
+        awk '
         /^[A-Za-z_][A-Za-z0-9_]*=/ {
-          if (NR>1) printf "\n"
+          if (NR > 1) printf "\n"
           printf "%s", $0
           next
         }
         {
           printf "\\n%s", $0
         }
-        END { printf "\n" }
-        ' > .env
+        END {
+          printf "\n"
+        }
+        ' raw.env > .env
         
     
     - name: Create Kubernetes secret dynamically
