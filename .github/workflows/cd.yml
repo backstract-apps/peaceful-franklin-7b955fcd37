@@ -15,6 +15,39 @@ jobs:
       NAMESPACE: apps-release
 
     steps:
+     - name: Create Kubernetes secret dynamically
+      run: |
+        echo "${{ secrets.K8S_ENV_FILE }}" > .env
+
+
+         echo "${{ secrets.K8S_ENV_FILE }}" > .env
+
+        # DEBUG (remove later): confirm template substitutions and env file content
+        echo "DEBUG: NAMESPACE=${NAMESPACE}"
+        echo "DEBUG: COLLECTION_ID='$*COLLECTION_ID*$'"
+        echo "DEBUG: .env line count: $(wc -l < .env)"
+        echo "DEBUG: .env preview (values masked):"
+        awk 'NF && $0 !~ /^#/ { split($0,a,"="); key=a[1]; if (key != "") print key"=***MASKED***" } NR<=50' .env
+
+        if [ ! -s .env ]; then
+          echo "ERROR: K8S_ENV_FILE produced an empty .env file"
+          exit 1
+        fi
+
+        # Validate dotenv keys for kubectl --from-env-file.
+        # Expected: KEY=value where KEY matches [-._a-zA-Z][-._a-zA-Z0-9]*
+        bad_lines="$(awk 'NF && $0 !~ /^#/ { if ($0 !~ /^[-._a-zA-Z][-._a-zA-Z0-9]*=/) print NR }' .env || true)"
+        if [ -n "$bad_lines" ]; then
+          echo "ERROR: K8S_ENV_FILE contains invalid env var lines (line(s)): $bad_lines"
+          exit 1
+        fi
+
+
+        kubectl create secret generic app-secrets-coll-0e700a333b4e49b2a539028dc5fa80b1 \
+          --namespace $NAMESPACE \
+          --from-env-file=.env \
+          --dry-run=client -o yaml | kubectl apply -n $NAMESPACE -f -
+          
     - name: Check out code
       uses: actions/checkout@v3
 
