@@ -20,9 +20,18 @@ jobs:
 
     - name: Normalize env file
       run: |
-        printf "%s" "${{ secrets.K8S_ENV_FILE_2 }}" \
-        | awk 'BEGIN{RS=""; ORS="\n"} {gsub(/\n/,"\\n"); print}' \
-        > .env
+        printf "%s" "${{ secrets.K8S_ENV_FILE }}" | awk '
+        /^[A-Za-z_][A-Za-z0-9_]*=/ {
+          if (NR>1) printf "\n"
+          printf "%s", $0
+          next
+        }
+        {
+          printf "\\n%s", $0
+        }
+        END { printf "\n" }
+        ' > .env
+        
     
     - name: Create Kubernetes secret dynamically
       run: |
