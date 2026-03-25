@@ -20,13 +20,13 @@ jobs:
 
     - name: Normalize env file
       run: |
-        printf "%s" "${{ secrets.K8S_ENV_FILE_1 }}" \
+        printf "%s" "${{ secrets.K8S_ENV_FILE_2 }}" \
         | awk 'BEGIN{RS=""; ORS="\n"} {gsub(/\n/,"\\n"); print}' \
         > .env
     
     - name: Create Kubernetes secret dynamically
       run: |
-        echo "${{ secrets.K8S_ENV_FILE_1 }}" > .env
+        echo "${{ secrets.K8S_ENV_FILE_2 }}" > .env
 
         # DEBUG (remove later): confirm template substitutions and env file content
         echo "DEBUG: NAMESPACE=${NAMESPACE}"
@@ -36,7 +36,7 @@ jobs:
         awk 'NF && $0 !~ /^#/ { split($0,a,"="); key=a[1]; if (key != "") print key"=***MASKED***" } NR<=50' .env
 
         if [ ! -s .env ]; then
-          echo "ERROR: K8S_ENV_FILE_1 produced an empty .env file"
+          echo "ERROR: K8S_ENV_FILE_2 produced an empty .env file"
           exit 1
         fi
 
@@ -44,7 +44,7 @@ jobs:
         # Expected: KEY=value where KEY matches [-._a-zA-Z][-._a-zA-Z0-9]*
         bad_lines="$(awk 'NF && $0 !~ /^#/ { if ($0 !~ /^[-._a-zA-Z][-._a-zA-Z0-9]*=/) print NR }' .env || true)"
         if [ -n "$bad_lines" ]; then
-          echo "ERROR: K8S_ENV_FILE_1 contains invalid env var lines (line(s)): $bad_lines"
+          echo "ERROR: K8S_ENV_FILE_2 contains invalid env var lines (line(s)): $bad_lines"
           exit 1
         fi
 
