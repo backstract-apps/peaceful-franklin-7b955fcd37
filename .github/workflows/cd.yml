@@ -15,7 +15,9 @@ jobs:
       NAMESPACE: apps-release
 
     steps:
-     - name: Create Kubernetes secret dynamically
+    - name: Check out code
+      uses: actions/checkout@v3
+    - name: Create Kubernetes secret dynamically
       run: |
         echo "${{ secrets.K8S_ENV_FILE }}" > .env
 
@@ -47,9 +49,6 @@ jobs:
           --namespace $NAMESPACE \
           --from-env-file=.env \
           --dry-run=client -o yaml | kubectl apply -n $NAMESPACE -f -
-          
-    - name: Check out code
-      uses: actions/checkout@v3
 
     - name: Setup job
       uses: ./.github/actions/log-streamer
