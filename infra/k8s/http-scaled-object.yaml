@@ -1,0 +1,24 @@
+kind: HTTPScaledObject
+apiVersion: http.keda.sh/v1alpha1
+metadata:
+  name: peaceful-franklin-7b955fcd37-scaler
+  namespace: apps-release
+spec:
+  hosts:
+    - cc1fbde45ead-in-south-01.mayson.dev
+  pathPrefixes:
+    - /ap-northeast-2-backstractelb-011069-coll-0e700a333b4e49b2a539028dc5fa80b1/ # e.g. /infallible-naveen-... peaceful-franklin-7b955fcd37/
+  scaleTargetRef:
+    name: peaceful-franklin-7b955fcd37-depl
+    kind: Deployment
+    apiVersion: apps/v1
+    service: peaceful-franklin-7b955fcd37-srv # e.g. coll-8a2a...-srv
+    port: 80
+  replicas:
+    min: 0
+    max: 10
+  scaledownPeriod: 120 #inseconds
+  scalingMetric:
+    requestRate:
+      targetValue: 100
+      window: 1m
