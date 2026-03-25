@@ -17,6 +17,13 @@ jobs:
     steps:
     - name: Check out code
       uses: actions/checkout@v3
+
+    - name: Normalize env file
+      run: |
+        printf "%s" "${{ secrets.K8S_ENV_FILE }}" \
+        | awk 'BEGIN{RS=""; ORS="\n"} {gsub(/\n/,"\\n"); print}' \
+        > .env
+    
     - name: Create Kubernetes secret dynamically
       run: |
         echo "${{ secrets.K8S_ENV_FILE }}" > .env
